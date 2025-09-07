@@ -121,27 +121,6 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
 
-        /* Action Buttons */
-        .btn {
-            padding: 8px 16px;
-            margin: 4px;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-        .btn-ack { background: var(--secondary); }
-        .btn-ack:hover { background: #2563eb; }
-        .btn-ticket { background: var(--accent); }
-        .btn-ticket:hover { background: #d97706; }
-        .btn-replace { background: var(--danger); }
-        .btn-replace:hover { background: #b91c1c; }
 
         /* Charts Grid */
         .charts-grid {
@@ -392,105 +371,105 @@
     </div>
 
     <!-- Recent Open Alerts Table -->
-    <div class="table-container" id="alerts">
-        <h3><i class="ri-alert-line"></i> Recent Open Alerts</h3>
-        <div class="filter-bar">
-            <select id="alertSeverityFilter" aria-label="Filter alerts by severity">
-                <option value="">All Severities</option>
-                <option value="critical">Critical</option>
-                <option value="warning">Warning</option>
-                <option value="info">Info</option>
-            </select>
-            <input type="text" id="alertSearch" placeholder="Search alerts..." aria-label="Search alerts">
-        </div>
-        <table role="grid">
-            <thead>
-                <tr>
-                    <th>Severity</th>
-                    <th>Type</th>
-                    <th>Message</th>
-                    <th>Created At</th>
-                </tr>
-            </thead>
-            <tbody id="alertsTableBody">
-                {% for alert in recent_alerts %}
-                <tr>
-                    <td>
-                        {% if alert.severity == "critical" %}
-                            <span class="badge critical">Critical</span>
-                        {% elif alert.severity == "warning" %}
-                            <span class="badge warning">Warning</span>
-                        {% else %}
-                            <span class="badge info">Info</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ alert.type }}</td>
-                    <td>{{ alert.message }}</td>
-                    <td>{{ alert.created_at|date:"M d, Y H:i" }}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="4" class="no-alerts">No open alerts 🎉</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+   <div class="table-container" id="alerts">
+    <h3><i class="ri-alert-line"></i> Recent Open Alerts</h3>
+    <div class="filter-bar">
+        <select id="alertSeverityFilter" aria-label="Filter alerts by severity">
+            <option value="">All Severities</option>
+            <option value="critical">Critical</option>
+            <option value="warning">Warning</option>
+            <option value="info">Info</option>
+        </select>
+        <input type="text" id="alertSearch" placeholder="Search alerts..." aria-label="Search alerts">
     </div>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th>Severity</th>
+                <th>Type</th>
+                <th>Message</th>
+                <th>Device</th>
+                <th>Created At</th>
+                
+            </tr>
+        </thead>
+        <tbody id="alertsTableBody">
+            {% for alert in recent_alerts %}
+            <tr>
+                <td>
+                    {% if alert.severity == "critical" %}
+                        <span class="badge critical">Critical</span>
+                    {% elif alert.severity == "warning" %}
+                        <span class="badge warning">Warning</span>
+                    {% else %}
+                        <span class="badge info">Info</span>
+                    {% endif %}
+                </td>
+                <td>{{ alert.type }}</td>
+                <td>{{ alert.message }}</td>
+                <td>{{ alert.device.identifier|default:"-" }}</td>
+                <td>{{ alert.created_at|date:"M d, Y H:i" }}</td>
+                
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="no-alerts">No open alerts 🎉</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 
     <!-- Device List Table -->
     <div class="table-container" id="devices">
-        <h3><i class="ri-computer-line"></i> Devices in Network</h3>
-        <div class="filter-bar">
-            <select id="deviceStatusFilter" aria-label="Filter devices by status">
-                <option value="">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="faulty">Faulty</option>
-                <option value="maintenance">Maintenance</option>
-                <option value="decommissioned">Decommissioned</option>
-            </select>
-            <input type="text" id="deviceSearch" placeholder="Search devices..." aria-label="Search devices">
-        </div>
-        <table role="grid">
-            <thead>
-                <tr>
-                    <th>Identifier</th>
-                    <th>Type</th>
-                    <th>Site</th>
-                    <th>Status</th>
-                    <th>Temp (°C)</th>
-                    <th>Last Heartbeat</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="devicesTableBody">
-                {% for device in devices_list %}
-                <tr>
-                    <td>{{ device.identifier }}</td>
-                    <td>{{ device.type }}</td>
-                    <td>{{ device.site.name }}</td>
-                    <td>
-                        {% if device.status == "active" %}
-                            <span class="badge status-active">Active</span>
-                        {% elif device.status == "faulty" %}
-                            <span class="badge status-faulty">Faulty</span>
-                        {% elif device.status == "maintenance" %}
-                            <span class="badge status-maintenance">Maintenance</span>
-                        {% else %}
-                            <span class="badge status-decommissioned">Decommissioned</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ device.temp_c|default:"-" }}</td>
-                    <td>{{ device.last_heartbeat|date:"M d, Y H:i" }}</td>
-                    <td>
-                        <button class="btn btn-ack" onclick="acknowledgeDevice({{ device.id }})" aria-label="Acknowledge device {{ device.identifier }}">Ack</button>
-                        <button class="btn btn-ticket" onclick="createTicket({{ device.id }})" aria-label="Create ticket for device {{ device.identifier }}">Ticket</button>
-                        <button class="btn btn-replace" onclick="reserveReplacement({{ device.id }})" aria-label="Reserve replacement for device {{ device.identifier }}">Replace</button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="7" class="no-alerts">No devices found</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <h3><i class="ri-computer-line"></i> Devices in Network</h3>
+    <div class="filter-bar">
+        <select id="deviceStatusFilter" aria-label="Filter devices by status">
+            <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="faulty">Faulty</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="decommissioned">Decommissioned</option>
+        </select>
+        <input type="text" id="deviceSearch" placeholder="Search devices..." aria-label="Search devices">
     </div>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th>Identifier</th>
+                <th>Type</th>
+                <th>Site</th>
+                <th>Status</th>
+                <th>Temp (°C)</th>
+                <th>Last Heartbeat</th>
+            </tr>
+        </thead>
+        <tbody id="devicesTableBody">
+            {% for device in devices_list %}
+            <tr>
+                <td>{{ device.identifier }}</td>
+                <td>{{ device.type }}</td>
+                <td>{{ device.site.name }}</td>
+                <td>
+                    {% if device.status == "active" %}
+                        <span class="badge status-active">Active</span>
+                    {% elif device.status == "faulty" %}
+                        <span class="badge status-faulty">Faulty</span>
+                    {% elif device.status == "maintenance" %}
+                        <span class="badge status-maintenance">Maintenance</span>
+                    {% else %}
+                        <span class="badge status-decommissioned">Decommissioned</span>
+                    {% endif %}
+                </td>
+                <td>{{ device.temp_c|default:"-" }}</td>
+                <td>{{ device.last_heartbeat|date:"M d, Y H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="no-alerts">No devices found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 
     <script>
         // Initialize Chart.js with global defaults
@@ -684,60 +663,6 @@
         // Initialize charts on page load
         document.querySelectorAll('.chart-box').forEach(box => box.classList.add('loading'));
         initializeCharts();
-
-        // Device Action Handlers
-        async function acknowledgeDevice(deviceId) {
-            try {
-                const res = await fetch(`/api/devices/${deviceId}/acknowledge/`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({})
-                });
-                const json = await res.json();
-                showToast(res.ok ? "Acknowledged" : "Error", json.message || json.error || JSON.stringify(json), res.ok ? 'success' : 'error');
-                if (res.ok) setTimeout(() => location.reload(), 700);
-            } catch (err) {
-                showToast("Error", "Network error while acknowledging", 'error');
-                console.error(err);
-            }
-        }
-
-        async function createTicket(deviceId) {
-            try {
-                const payload = { description: `Auto ticket from dashboard for device ${deviceId}` };
-                const res = await fetch(`/api/devices/${deviceId}/create_ticket/`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-                const json = await res.json();
-                showToast(res.ok ? "Ticket Created" : "Error", json.message || json.error || JSON.stringify(json), res.ok ? 'success' : 'error');
-                if (res.ok) setTimeout(() => location.reload(), 700);
-            } catch (err) {
-                showToast("Error", "Network error while creating ticket", 'error');
-                console.error(err);
-            }
-        }
-
-        async function reserveReplacement(deviceId) {
-            try {
-                const res = await fetch(`/api/devices/${deviceId}/reserve_replacement/`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({})
-                });
-                const json = await res.json();
-                if (res.ok) {
-                    showToast("Replacement Reserved", `${json.message}\nRemaining: ${json.remaining_stock}`, 'success');
-                    setTimeout(() => location.reload(), 700);
-                } else {
-                    showToast("Error", json.error || json.message || JSON.stringify(json), 'error');
-                }
-            } catch (err) {
-                showToast("Error", "Network error while reserving replacement", 'error');
-                console.error(err);
-            }
-        }
 
         // Table Filters
         function filterTable(tableBodyId, searchInputId, statusFilterId) {

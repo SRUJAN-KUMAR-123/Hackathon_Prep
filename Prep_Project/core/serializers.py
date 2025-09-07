@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Site, Device, InventoryItem, Plan, Customer, Subscription, UsageEvent, Alert, Bill, Ticket
+from .models import Site, Device, InventoryItem, Plan, Customer, Subscription, UsageEvent, Alert, Bill
 
 class SiteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,8 +54,4 @@ class BillSerializer(serializers.ModelSerializer):
     def get_month_display(self, obj):
         return obj.month.strftime("%b %Y")  # e.g., Jan 2025
     
-class TicketSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ticket
-        fields = "__all__"
 

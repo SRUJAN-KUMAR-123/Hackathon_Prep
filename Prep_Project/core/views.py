@@ -15,7 +15,7 @@ from django.utils.decorators import method_decorator
 
 from .models import (
     Site, Device, InventoryItem, Plan, Customer,
-    Subscription, UsageEvent, Alert, Bill, Ticket
+    Subscription, UsageEvent, Alert, Bill
 )
 from .serializers import (
     SiteSerializer, DeviceSerializer, InventoryItemSerializer, PlanSerializer,
@@ -35,74 +35,6 @@ class SiteViewSet(viewsets.ModelViewSet):
 class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
-
-    @action(
-        detail=True,
-        methods=['post'],
-        authentication_classes=[],      # disable SessionAuthentication (avoids CSRF)
-        permission_classes=[AllowAny],
-    )
-    def acknowledge(self, request, pk=None):
-        device = self.get_object()
-        alerts_qs = Alert.objects.filter(device=device, status="open")
-        count = alerts_qs.count()
-        if count == 0:
-            return Response({"message": f"No open alerts for device {device.identifier}"})
-        alerts_qs.update(status="acknowledged")
-        return Response({"message": f"Acknowledged {count} alert(s) for device {device.identifier}"})
-
-    @action(
-        detail=True,
-        methods=['post'],
-        authentication_classes=[],
-        permission_classes=[AllowAny],
-    )
-    def create_ticket(self, request, pk=None):
-        device = self.get_object()
-        desc = request.data.get("description", f"Ticket created from dashboard for {device.identifier}")
-        ticket = Ticket.objects.create(device=device, description=desc, created_by=request.data.get("created_by", "engineer"))
-        # Optionally set device to maintenance to reflect ticket
-        device.status = "maintenance"
-        device.save(update_fields=["status"])
-        return Response({"message": f"Ticket #{ticket.id} created for device {device.identifier}", "ticket_id": ticket.id})
-
-    @action(
-        detail=True,
-        methods=['post'],
-        authentication_classes=[],
-        permission_classes=[AllowAny],
-    )
-    def reserve_replacement(self, request, pk=None):
-        device = self.get_object()
-
-        # map device.type -> inventory name snippet (adjust if your inventory names differ)
-        mapping = {
-            "CPE": "Set Top Box",
-            "ROUTER": "WiFi Router",
-            "TOWER": "Fiber Cable",
-        }
-        mapped_name = mapping.get(device.type)
-
-        inventory_item = None
-        if mapped_name:
-            inventory_item = InventoryItem.objects.filter(name__icontains=mapped_name).first()
-        if not inventory_item:
-            # fallback: try any inventory item if mapping fails
-            inventory_item = InventoryItem.objects.first()
-
-        if not inventory_item:
-            return Response({"error": "No inventory items configured"}, status=404)
-
-        if inventory_item.stock_on_hand <= 0:
-            return Response({"error": "No stock available for replacement"}, status=400)
-
-        inventory_item.stock_on_hand -= 1
-        inventory_item.save(update_fields=["stock_on_hand"])
-        return Response({
-            "message": f"Replacement reserved ({inventory_item.name}) for device {device.identifier}",
-            "remaining_stock": inventory_item.stock_on_hand
-        })
-
 
 class InventoryItemViewSet(viewsets.ModelViewSet):
     queryset = InventoryItem.objects.all()

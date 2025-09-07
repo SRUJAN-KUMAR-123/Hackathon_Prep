@@ -1,8 +1,7 @@
 from django.contrib import admin
-from .models import Site, Device, InventoryItem, Plan, Customer, Subscription, UsageEvent, Alert, Ticket
+from .models import Site, Device, InventoryItem, Plan, Customer, Subscription, UsageEvent, Alert
 
 admin.site.register(Site)
-admin.site.register(Ticket)
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
     list_display = ("identifier", "type", "status", "site", "last_heartbeat", "temp_c", "eol_date")

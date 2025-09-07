@@ -69,6 +69,7 @@ class Command(BaseCommand):
         Alert.objects.create(severity="warning", type="DEVICE_OVERHEAT", message="Tower A temperature high", device=devices[0])
         Alert.objects.create(severity="critical", type="DEVICE_DOWN", message="Router dev-003 is not responding", device=devices[2])
         Alert.objects.create(severity="info", type="CUSTOMER_COMPLAINT", message="Customer John Doe filed a complaint", customer=customers[2])
+        
 
         # Bills
         for sub in subs:
@@ -95,6 +96,9 @@ class Command(BaseCommand):
                     status=random.choice(["paid", "unpaid"])
                 )
 
-        self.stdout.write(self.style.SUCCESS("✅ Database seeded with sample data + bills"))
         
+        self.stdout.write(self.style.SUCCESS("Database seeded with sample data + bills"))
+        
+        
+
         

@@ -124,20 +124,3 @@ class Bill(models.Model):
     def __str__(self):
         return f"Bill for {self.customer.name} - {self.month.strftime('%B %Y')} ({self.status})"
 
-
-# --- add this to core/models.py (below other models) ---
-class Ticket(models.Model):
-    STATUS_CHOICES = [
-        ("open", "Open"),
-        ("in_progress", "In Progress"),
-        ("resolved", "Resolved"),
-    ]
-    device = models.ForeignKey("Device", on_delete=models.CASCADE, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="open")
-    description = models.TextField(blank=True, default="")
-    created_by = models.CharField(max_length=100, blank=True, default="engineer")
-
-    def __str__(self):
-        device_id = self.device.identifier if self.device else "N/A"
-        return f"Ticket #{self.id} - {device_id} - {self.status}"
